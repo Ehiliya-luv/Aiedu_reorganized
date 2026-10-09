@@ -17,12 +17,21 @@ import json
 import os
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 LABELS = ("supported", "inferable", "unsupported", "contradicted")
+CASE_ID = re.compile(r"^case(\d+)$", re.IGNORECASE)
+
+
+def _canonical_case_id(raw: str) -> str | None:
+    match = CASE_ID.fullmatch(raw)
+    if not match:
+        return None
+    return f"case{int(match.group(1)):03d}"
 
 
 def _resolve(raw: str) -> Path:
@@ -39,36 +48,89 @@ def _load_text(path: Path) -> str:
 
 
 def discover_tasks(data_dir: Path, cases_dir: Path) -> list[dict[str, Any]]:
-    """Discover model/case pairs from the stable public input layout."""
+    """Discover model/case pairs from public and original project layouts.
+
+    The public fixture layout is ``by_model/<model>/reasoning/case001.md``.
+    The project also uses ``<group>/<model>/case001/reasoning.md`` and a
+    flat ``<model>/case001.md`` layout.  All three are accepted so an operator
+    can point the evaluator at existing outputs without copying them.
+    """
     if not data_dir.is_dir():
         raise FileNotFoundError(f"reasoning data directory does not exist: {data_dir}")
     if not cases_dir.is_dir():
         raise FileNotFoundError(f"case directory does not exist: {cases_dir}")
-    case_files = {
-        path.stem: path
-        for path in cases_dir.iterdir()
-        if path.is_file() and path.suffix.lower() in {".md", ".txt", ".json"}
-    }
+    case_files: dict[str, Path] = {}
+    for path in cases_dir.iterdir():
+        if not path.is_file() or path.suffix.lower() not in {".md", ".txt", ".json"}:
+            continue
+        case_id = _canonical_case_id(path.stem)
+        if case_id is not None:
+            case_files[case_id] = path
+    candidates: list[tuple[Path, dict[str, Path]]] = []
+
+    # First handle the stable public layout.  If it is present and populated,
+    # do not recursively rediscover the same files below it.
     root = data_dir / "by_model"
-    if not root.is_dir():
-        raise FileNotFoundError(f"expected by_model directory: {root}")
+    if root.is_dir():
+        for model_dir in sorted(path for path in root.iterdir() if path.is_dir()):
+            reasoning_dir = model_dir / "reasoning"
+            files: dict[str, Path] = {}
+            for path in reasoning_dir.glob("case*.*"):
+                if not path.is_file() or path.suffix.lower() not in {".md", ".txt", ".json"}:
+                    continue
+                case_id = _canonical_case_id(path.stem)
+                if case_id is not None:
+                    files[case_id] = path
+            if files:
+                candidates.append((model_dir, files))
+
+    if not candidates:
+        # Original project layouts.  A candidate model directory is any
+        # directory containing direct case files or case directories with a
+        # reasoning.md child.  This deliberately ignores metadata files such
+        # as case097_099_supplement_manifest.json.
+        directories = [data_dir]
+        directories.extend(path for path in data_dir.rglob("*") if path.is_dir())
+        for model_dir in sorted(set(directories)):
+            files: dict[str, Path] = {}
+            for path in model_dir.glob("case*.*"):
+                if path.is_file() and path.suffix.lower() in {".md", ".txt", ".json"}:
+                    case_id = _canonical_case_id(path.stem)
+                    if case_id is not None:
+                        files[case_id] = path
+            for case_dir in model_dir.glob("case*"):
+                if not case_dir.is_dir():
+                    continue
+                case_id = _canonical_case_id(case_dir.name)
+                if case_id is None:
+                    continue
+                nested = case_dir / "reasoning.md"
+                if nested.is_file():
+                    files[case_id] = nested
+            if files:
+                candidates.append((model_dir, files))
+
+    if not candidates:
+        expected = root if root.is_dir() else data_dir
+        raise FileNotFoundError(f"no reasoning files found under {expected}")
+
+    name_counts = Counter(directory.name for directory, _ in candidates)
     tasks: list[dict[str, Any]] = []
-    for model_dir in sorted(path for path in root.iterdir() if path.is_dir()):
-        reasoning_dir = model_dir / "reasoning"
-        for reasoning_file in sorted(reasoning_dir.glob("case*.*")):
-            case_id = reasoning_file.stem
+    for model_dir, files in candidates:
+        model_name = model_dir.name
+        if name_counts[model_name] > 1:
+            model_name = f"{model_dir.parent.name}:{model_name}"
+        for case_id, reasoning_file in sorted(files.items()):
             if case_id not in case_files:
-                raise ValueError(f"missing raw case for {model_dir.name}/{case_id}")
+                raise ValueError(f"missing raw case for {model_name}/{case_id}")
             tasks.append(
                 {
-                    "model": model_dir.name,
+                    "model": model_name,
                     "case_id": case_id,
                     "reasoning_file": reasoning_file,
                     "case_file": case_files[case_id],
                 }
             )
-    if not tasks:
-        raise ValueError(f"no reasoning files found under {root}")
     return tasks
 
 

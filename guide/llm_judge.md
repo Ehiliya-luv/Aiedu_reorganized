@@ -17,8 +17,11 @@ python question_llm_judge_main.py \
   --dry-run
 ```
 
-`<package-root>` 必须含 `by_model/<model>/<task>/case*.md`。dry-run 只检查
-目录和 case 数量，不调用远程服务。
+`<package-root>` 可以是标准化的 `by_model/<model>/<task>/case*.md` 根目录，
+也可以是项目原有的 Question 输出根目录；后者按
+`<source-group>/<model>/case*/question.md` 读取。模型目录名就是 `--baseline`
+和候选模型名；例如原有 Baichuan 输出应传 `--baseline baichuan-m2`。程序也会
+把 `case1` 规范化为 `case001`。dry-run 只检查目录和 case 数量，不调用远程服务。
 
 需要复用通用比较器时可以显式传入其他 task；这不改变 reasoning 量化入口的
 分类和汇总职责。
@@ -41,6 +44,7 @@ python question_llm_judge_main.py \
   --cases-dir <case-dir> \
   --baseline baseline \
   --tasks question \
+  --prompt-variant prompt_v3 \
   --repeats 3 --workers 4 \
   --output-dir <local-result-dir>
 ```

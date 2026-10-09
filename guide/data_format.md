@@ -29,16 +29,27 @@ per_stage/            case001/per_stage/questions.md
 
 ## Judge 输入
 
-结果评价入口读取：
+结果评价入口优先读取项目原有的 Question 输出布局：
+
+```text
+<question-output-root>/<source-group>/<model-name>/case001/question.md
+```
+
+也接受公开 fixture 和外部用户更方便使用的标准化布局：
 
 ```text
 <data-dir>/by_model/<model-name>/question/case001.md
 <data-dir>/by_model/<model-name>/reasoning/case001.md
 ```
 
-每个模型和任务应使用相同 case 编号；原始病例可另放在 `--cases-dir`，文件名
-为 `case*.md`、`case*.txt` 或 `case*.json`。不传该参数时，兼容流程会把基线
-输出第一行当作 case 文本，正式实验应显式提供独立输入。
+Reasoning 量化入口使用以下布局：项目原有结果可以直接使用
+`<reasoning-output-root>/<source-group>/<model-name>/case001/reasoning.md`，
+也接受平铺的 `<reasoning-output-root>/<model-name>/case001.md`；标准化布局则放在
+`by_model/<model-name>/reasoning/case001.md`。每个模型和任务应使用相同 case
+编号；程序也会把 `case1` 规范化为 `case001`。原始病例可另放在 `--cases-dir`，
+文件名为 `case*.md`、`case*.txt` 或 `case*.json`。
+Judge 若没有显式病例目录，会把基线输出第一行作为兼容回退；正式实验应显式
+提供独立病例目录。
 
 ## 产物
 

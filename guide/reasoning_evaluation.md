@@ -7,8 +7,10 @@ contradicted 四类声明计数，并计算 case consistency 与 hallucination r
 运行者把每个模型的 reasoning Markdown 放在：
 
 ```text
-<package-root>/by_model/<model>/reasoning/case001.md
+<reasoning-output-root>/<model>/case001.md
 ```
+
+也可以使用标准化的 `<package-root>/by_model/<model>/reasoning/case001.md`。
 
 原始 case 放在独立目录后运行：
 

@@ -14,7 +14,12 @@ import os
 import sys
 from pathlib import Path
 
-from .evaluate_question_reasoning import dry_run, evaluate_task, load_model_outputs
+from .evaluate_question_reasoning import (
+    _canonical_case_id,
+    dry_run,
+    evaluate_task,
+    load_model_outputs,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -64,7 +69,11 @@ def verify_inputs(
     if cases_dir is not None:
         if not cases_dir.is_dir():
             raise FileNotFoundError(f"cases directory does not exist: {cases_dir}")
-        case_ids = {path.stem for path in cases_dir.glob("case*.*")}
+        case_ids = {
+            case_id
+            for path in cases_dir.glob("case*.*")
+            if (case_id := _canonical_case_id(path.stem)) is not None
+        }
         for task in tasks:
             expected = set(load_model_outputs(data_dir, task)[baseline])
             missing = sorted(expected - case_ids)
@@ -97,6 +106,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--n-boot", type=int, default=10000)
     parser.add_argument("--limit-cases", type=int, default=None)
+    parser.add_argument(
+        "--prompt-variant",
+        default="prompt_v3",
+        choices=("current", "legacy_question", "prompt_v3", "prompt_v4"),
+        help="Question Judge prompt contract; prompt_v3 matches the paper run",
+    )
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="Inspect inputs without API calls")
     parser.add_argument("--verify", action="store_true", help="Validate input layout and matching case sets")
@@ -126,6 +141,7 @@ def _run_online(args: argparse.Namespace, tasks: list[str], data_dir: Path, case
             limit_cases=args.limit_cases,
             resume=args.resume,
             cases_dir=cases_dir,
+            prompt_variant=args.prompt_variant,
         )
 
 

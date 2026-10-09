@@ -11,6 +11,7 @@ online runs receive those values from the environment.
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -23,28 +24,84 @@ except ImportError:
     from llm_judge import AnchorJudge, _resolve_judge_credentials
 
 
-def load_model_outputs(data_dir: Path, task: str) -> dict:
-    """Load all model outputs for a task from the by_model directory.
+_CASE_ID = re.compile(r"^case(\d+)$", re.IGNORECASE)
 
-    Returns: {model_name: {case_id: content, ...}, ...}
-    """
+
+def _canonical_case_id(raw: str) -> str | None:
+    match = _CASE_ID.fullmatch(raw)
+    if not match:
+        return None
+    return f"case{int(match.group(1)):03d}"
+
+
+def _read_task_files(task_dir: Path, task: str) -> dict[str, str]:
+    """Read flat case files or the project's ``case/<file>`` layout."""
+    nested_names = {"question": "question.md", "reasoning": "reasoning.md"}
+    paths: dict[str, Path] = {}
+    for case_file in sorted(task_dir.glob("case*.*")):
+        if not case_file.is_file():
+            continue
+        case_id = _canonical_case_id(case_file.stem)
+        if case_id is not None:
+            paths[case_id] = case_file
+    nested_name = nested_names.get(task)
+    if nested_name:
+        for case_dir in sorted(task_dir.glob("case*")):
+            if not case_dir.is_dir():
+                continue
+            case_id = _canonical_case_id(case_dir.name)
+            if case_id is None:
+                continue
+            nested = case_dir / nested_name
+            if nested.is_file():
+                paths[case_id] = nested
+    return {case_id: path.read_text(encoding="utf-8") for case_id, path in paths.items()}
+
+
+def _load_paper_layout(data_dir: Path, task: str) -> dict:
+    """Load the original paper layout without copying or renaming its files."""
+    candidates: list[tuple[Path, dict[str, str]]] = []
+    directories = [data_dir]
+    directories.extend(path for path in data_dir.rglob("*") if path.is_dir())
+    for directory in sorted(set(directories)):
+        if "by_model" in directory.parts:
+            continue
+        values = _read_task_files(directory, task)
+        if not values:
+            continue
+        candidates.append((directory, values))
+
+    counts: dict[str, int] = {}
+    for directory, _ in candidates:
+        counts[directory.name] = counts.get(directory.name, 0) + 1
+    discovered: dict[str, dict[str, str]] = {}
+    for directory, values in candidates:
+        model_name = directory.name
+        if counts[model_name] > 1:
+            model_name = f"{directory.parent.name}:{model_name}"
+        if model_name in discovered:
+            # A second identical basename can occur at more than one grouping
+            # level.  Keep the input distinguishable without changing files.
+            model_name = ":".join(directory.relative_to(data_dir).parts[:-1] + (directory.name,))
+        discovered[model_name] = values
+    return discovered
+
+
+def load_model_outputs(data_dir: Path, task: str) -> dict:
+    """Load public ``by_model`` or original paper model outputs."""
     by_model = {}
     by_model_dir = data_dir / "by_model"
-    if not by_model_dir.exists():
-        print(f"Error: '{by_model_dir}' not found. Is --data-dir correct?")
-        return by_model
+    if not by_model_dir.is_dir():
+        return _load_paper_layout(data_dir, task)
 
     for model_dir in sorted(by_model_dir.iterdir()):
         if not model_dir.is_dir():
             continue
         task_dir = model_dir / task
-        if not task_dir.exists():
+        if not task_dir.is_dir():
             print(f"  [SKIP] {model_dir.name}: no '{task}' task data")
             continue
-        outputs = {}
-        for case_file in sorted(task_dir.glob("case*.md")):
-            case_id = case_file.stem
-            outputs[case_id] = case_file.read_text(encoding="utf-8")
+        outputs = _read_task_files(task_dir, task)
         if outputs:
             by_model[model_dir.name] = outputs
 
@@ -103,7 +160,8 @@ def dry_run(data_dir: Path, tasks: list[str], baseline: str, limit_cases: int | 
 def evaluate_task(task: str, data_dir: Path, baseline: str, output_dir: Path,
                   repeats: int, workers: int, n_boot: int,
                   limit_cases: int | None = None, resume: bool = False,
-                  cases_dir: Path | None = None) -> dict:
+                  cases_dir: Path | None = None,
+                  prompt_variant: str = "current") -> dict:
     """Run AnchorJudge evaluation for one task."""
     model_outputs = load_model_outputs(data_dir, task)
     if baseline not in model_outputs:
@@ -121,7 +179,9 @@ def evaluate_task(task: str, data_dir: Path, baseline: str, output_dir: Path,
         for case_path in sorted(cases_dir.glob("case*.*")):
             if case_path.suffix.lower() not in {".md", ".txt", ".json"}:
                 continue
-            raw_cases[case_path.stem] = case_path.read_text(encoding="utf-8")
+            case_id = _canonical_case_id(case_path.stem)
+            if case_id is not None:
+                raw_cases[case_id] = case_path.read_text(encoding="utf-8")
     for case_id, content in model_outputs[baseline].items():
         if case_id not in raw_cases:
             lines = [line.strip() for line in content.split("\n") if line.strip()]
@@ -152,6 +212,7 @@ def evaluate_task(task: str, data_dir: Path, baseline: str, output_dir: Path,
         api_base=api_base,
         api_key=api_key,
         max_tokens=8192,  # Long model outputs need larger token budget
+        prompt_variant=prompt_variant,
     )
 
     judge_task = _map_task_name(task)
@@ -227,6 +288,9 @@ def main():
                         help="Parse data directory without calling API")
     parser.add_argument("--resume", action="store_true",
                         help="Resume evaluation from checkpoint if exists")
+    parser.add_argument("--prompt-variant", default="current",
+                        choices=("current", "legacy_question", "prompt_v3", "prompt_v4"),
+                        help="Question prompt contract used by the remote Judge")
 
     args = parser.parse_args()
     tasks = [t.strip() for t in args.tasks.split(",") if t.strip()]
@@ -258,6 +322,7 @@ def main():
                 limit_cases=args.limit_cases,
                 resume=args.resume,
                 cases_dir=cases_dir,
+                prompt_variant=args.prompt_variant,
             )
         except ValueError as e:
             print(f"\n[{task}] ERROR: {e}")
