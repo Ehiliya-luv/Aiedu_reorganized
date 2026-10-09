@@ -7,16 +7,11 @@
 *.token
 
 # Private data, models and generated artifacts
-data/*
-!data/.gitkeep
-resources/*
-!resources/.gitkeep
-output/*
-!output/.gitkeep
-results/*
-!results/.gitkeep
-scratch/*
-!scratch/.gitkeep
+data/
+resources/
+output/
+results/
+scratch/
 docs/
 Paper/
 paper/
