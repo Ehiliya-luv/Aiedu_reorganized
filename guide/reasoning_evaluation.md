@@ -4,13 +4,15 @@ reasoning 评估不负责生成 reasoning、工作流编排或专家评价。它
 与 reasoning Markdown，对每个模型汇总 supported、inferable、unsupported 和
 contradicted 四类声明计数，并计算 case consistency 与 hallucination rate。
 
-运行者把每个模型的 reasoning Markdown 放在：
+运行者可以直接使用项目现有的嵌套结果布局：
 
 ```text
-<reasoning-output-root>/<model>/case001.md
+<reasoning-output-root>/<source-group>/<model>/case001/reasoning.md
 ```
 
-也可以使用标准化的 `<package-root>/by_model/<model>/reasoning/case001.md`。
+也可以使用平铺的 `<reasoning-output-root>/<model>/case001.md`，或标准化的
+`<package-root>/by_model/<model>/reasoning/case001.md`。`case1` 等未补零编号会
+自动规范化为 `case001`；`--baseline` 使用发现到的模型目录名。
 
 原始 case 放在独立目录后运行：
 
