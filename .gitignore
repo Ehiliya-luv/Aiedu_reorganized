@@ -1,0 +1,55 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.token
+
+# Private data, models and generated artifacts
+data/*
+!data/.gitkeep
+resources/*
+!resources/.gitkeep
+output/*
+!output/.gitkeep
+results/*
+!results/.gitkeep
+scratch/*
+!scratch/.gitkeep
+docs/
+Paper/
+paper/
+
+# Runtime files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.log
+training.log
+checkpoint-*/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.zip
+*.tar
+*.tar.gz
+
+# Local servers and notebooks
+*.pid
+*.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# Temporary editor files
+*.swp
+*.swo
+*~

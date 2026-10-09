@@ -1,0 +1,2 @@
+{"prompt":"病例：合成患者出现发热。请生成单选题。","chosen":"最合适的初步处理是补液并监测生命体征。","rejected":"最合适的初步处理是立即停用所有药物。","meta":{"sample_id":"fixture-001","question_type":"A1"}}
+{"prompt":"病例：合成患者有轻度咳嗽。请生成单选题。","chosen":"应先询问病程并进行基础查体。","rejected":"无需了解病史即可给出唯一诊断。","meta":{"sample_id":"fixture-002","question_type":"A1"}}

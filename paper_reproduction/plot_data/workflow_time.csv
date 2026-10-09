@@ -1,0 +1,5 @@
+task_key,task,clinician_n,clinician_median_min,clinician_mean_min,system_cases_n,system_basis,system_median_sec,system_mean_sec,system_median_min,system_mean_min,median_ratio,mean_ratio,clinician_scope,system_scope
+standardization,SOAP standardization,96,30,43.343750000,50,three_round_case_median,58.339043500,59.428551060,0.972317392,0.990475851,30.854122591,43.760531825,Anchor-case estimate,50-case processing-time benchmark
+evaluation,Case scoring,96,20,30.489583333,50,three_round_case_median,32.432303500,32.011848660,0.540538392,0.533530811,37.000147091,57.146808965,Anchor-case estimate,50-case processing-time benchmark
+clinical-thinking,Clinical reasoning,96,30,41.270833333,50,three_round_case_median,101.391898500,103.874609900,1.689864975,1.731243498,17.752897683,23.838838022,Anchor-case estimate,50-case processing-time benchmark
+questions,Question generation,96,30,60.875000000,50,first_use_only,215.208580500,186.235583020,3.586809675,3.103926384,8.363978777,19.612256373,Anchor-case estimate,50-case processing-time benchmark

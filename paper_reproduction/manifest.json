@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "source_policy": "aggregate values only",
+  "files": {
+    "question_ablation.csv": {
+      "sha256": "075179ce617ea440ba036bb4d093753fe6b78c642d2ffcb31dc2e2d0bbeb97d9",
+      "bytes": 206
+    },
+    "question_preference.csv": {
+      "sha256": "aca80290c16eb95feb24fe5735bc0c68ad7fdc893a3b85fe7525a66fc8b17128",
+      "bytes": 662
+    },
+    "question_quality.csv": {
+      "sha256": "fe8410bf1e9d177abe87c2a9065c1283a7a7b0820c3df138b6f0219aca8b7293",
+      "bytes": 894
+    },
+    "reasoning_consistency.csv": {
+      "sha256": "1ea01c63ed6fdf0e82612bd5281bd37aec0adc4821d61fc16a3ab124c70e4e16",
+      "bytes": 1642
+    },
+    "workflow_time.csv": {
+      "sha256": "747235f596ee7ccaa120e19fd77046473d749b5e380ccc240041784b5dca041d",
+      "bytes": 1045
+    }
+  }
+}
