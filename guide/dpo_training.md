@@ -2,10 +2,10 @@
 
 ## 最小运行
 
-在仓库根目录执行，入口保持为原来的 `dpo/main.py`：
+在仓库根目录执行：
 
 ```bash
-python dpo/main.py \
+python dpo_main.py \
   --dataset <path/to/dpo_pairs.jsonl> \
   --model-name <HuggingFace-repo-id-or-local-model> \
   --output-dir <path/to/run-output>
@@ -29,6 +29,8 @@ Windows PowerShell 将反斜杠换成反引号，或把命令写成一行。模�
 ```bash
 python dpo/plot_training_metrics.py --state <run-output>/trainer_state.json
 ```
+
+`python dpo/main.py` 仍然可以直接运行；根目录入口只负责转发参数。
 
 ## 运行产物
 

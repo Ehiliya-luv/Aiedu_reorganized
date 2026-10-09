@@ -20,6 +20,10 @@ scratch/*
 docs/
 Paper/
 paper/
+Figure_drawio/
+time_consuming_evaluation/
+RelatedWork/
+*.drawio
 
 # Runtime files
 __pycache__/

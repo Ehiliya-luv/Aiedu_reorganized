@@ -1,6 +1,6 @@
 # Question 质量评估
 
-公开入口仍使用原来的 `compute_quality_metrics.py`，内部子命令名仍为
+公开入口为根目录的 `question_quality_main.py`；内部实现仍使用原来的
 `qdr`，以保持代码和结果缓存的连续性。论文图表使用三类正式术语：
 **answer-key accuracy**、**option-set validity** 和 **stem clarity**；
 入口不会把内部实现名当作论文指标名称。
@@ -8,7 +8,7 @@
 ## 先解析
 
 ```bash
-python compute_quality_metrics.py parse \
+python question_quality_main.py parse \
   --group-dir baseline=<path/to/case-md> \
   --group-dir candidate=<path/to/another-case-md> \
   --output-dir <local-quality-run>
@@ -23,7 +23,7 @@ python compute_quality_metrics.py parse \
 真实运行需要远程 Judge：
 
 ```bash
-python compute_quality_metrics.py qdr \
+python question_quality_main.py qdr \
   --parsed-dir <local-quality-run>/parsed \
   --output-dir <local-quality-run> \
   --workers 8
@@ -38,10 +38,10 @@ python compute_quality_metrics.py qdr \
 无需密钥即可验证解析、缓存布局和摘要格式：
 
 ```bash
-python compute_quality_metrics.py parse \
+python question_quality_main.py parse \
   --group-dir demo=fixtures/question_inputs/demo \
   --output-dir scratch/demo-quality
-python compute_quality_metrics.py qdr \
+python question_quality_main.py qdr \
   --parsed-dir scratch/demo-quality/parsed \
   --output-dir scratch/demo-quality \
   --mock

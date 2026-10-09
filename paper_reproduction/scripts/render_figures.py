@@ -79,7 +79,7 @@ def render_preference(data_dir: Path, output_dir: Path) -> list[Path]:
 
 
 def render_reasoning(data_dir: Path, output_dir: Path) -> list[Path]:
-    frame = pd.read_csv(data_dir / "reasoning_consistency.csv")
+    frame = pd.read_csv(data_dir / "reasoning_summary.csv")
     frame = frame.sort_values("case_consistency", ascending=True)
     labels = {
         "api_baichuan_m2_norag_norefl": "Baichuan-M2",
@@ -107,7 +107,7 @@ def render_reasoning(data_dir: Path, output_dir: Path) -> list[Path]:
 
 
 def render_workflow_time(data_dir: Path, output_dir: Path) -> list[Path]:
-    frame = pd.read_csv(data_dir / "workflow_time.csv")
+    frame = pd.read_csv(data_dir / "workflow_time_summary.csv")
     labels = frame["task"].astype(str).tolist()
     x = np.arange(len(frame))
     width = 0.18
@@ -143,12 +143,12 @@ def render_all(data_dir: Path, output_dir: Path, selected: set[str]) -> list[Pat
     return paths
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", default="paper_reproduction/plot_data")
     parser.add_argument("--output-dir", default="results/paper_figures")
     parser.add_argument("--only", default="", help="Comma-separated: question-quality,preference,reasoning,workflow-time")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     root = Path(__file__).resolve().parents[2]
     data_dir = Path(args.data_dir).expanduser()
     if not data_dir.is_absolute():
@@ -159,7 +159,8 @@ def main() -> None:
     selected = {item.strip() for item in args.only.split(",") if item.strip()}
     for path in render_all(data_dir, output_dir, selected):
         print(path)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

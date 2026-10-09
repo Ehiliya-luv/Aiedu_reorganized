@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "authoritative_manifest": "../../paper_reproduction/manifest.yaml",
+  "note": "The YAML manifest is the single source of figure inputs and checks."
+}

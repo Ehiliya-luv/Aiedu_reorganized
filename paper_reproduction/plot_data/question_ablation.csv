@@ -1,4 +1,0 @@
-configuration,answer_key_accuracy,option_set_adequacy,stem_clarity
-Base Model,0.915503306,0.944893461,0.917707568
-Shutong-DPO,0.947447447,0.961711712,0.992492492
-Shutong,0.954005935,0.974777448,0.990356083

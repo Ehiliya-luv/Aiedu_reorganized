@@ -8,6 +8,5 @@ The three Question panels use the manuscript terms **answer-key accuracy**,
 **option-set validity**, and **stem clarity**. The separate preference and
 reasoning tables are aggregate summaries for their respective figures.
 
-`workflow_time.csv` is an aggregate comparison table. Whether it is included
-in a later public release remains a project-level decision; it is kept here so
-the code can rebuild the current paper figure without private timing records.
+`workflow_time_summary.csv` is an aggregate comparison table. It contains no
+raw questionnaire or per-case timing record.

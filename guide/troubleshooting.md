@@ -12,7 +12,7 @@
 
 ## Judge 失败
 
-1. 先运行 `--dry-run`，确认模型目录、任务和 case 编号交集不为空。
+1. 先运行 `question_llm_judge_main.py --dry-run`，确认模型目录、任务和 case 编号交集不为空。
 2. 检查 `AIEDU_JUDGE_API_BASE`、`AIEDU_JUDGE_API_KEY`、`AIEDU_JUDGE_MODEL`。
 3. 用服务提供方的最小 Chat Completions 请求验证地址、权限和模型名。
 4. 查看输出目录中的 checkpoint；网络超时和限流可通过 `--resume` 继续。
@@ -29,5 +29,6 @@
 
 ## 绘图失败
 
-确认 `requirements_eval.txt` 已安装，CSV 表头没有被改动，且命令从仓库根目录
-运行。绘图只依赖聚合 CSV，不需要真实数据或模型。
+确认 `requirements_eval.txt` 已安装，先运行
+`python paper_reproduction_main.py --verify`，并确认 CSV 表头没有被改动。绘图
+只依赖聚合 CSV，不需要真实数据或模型。

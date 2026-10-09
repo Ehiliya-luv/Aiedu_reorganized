@@ -1,0 +1,2 @@
+{"prompt":"Synthetic task context","chosen":"Preferred synthetic answer","rejected":"Rejected synthetic answer","meta":{"sample_id":"fixture-001","question_type":"A1"}}
+{"prompt":"Another synthetic task","chosen":"Another preferred answer","rejected":"Another rejected answer","meta":{"sample_id":"fixture-002","question_type":"A2"}}

@@ -1,0 +1,6 @@
+schema_version: 1
+data_dir: data/model_outputs
+cases_dir: data/cases
+baseline: baseline
+tasks:
+  - question

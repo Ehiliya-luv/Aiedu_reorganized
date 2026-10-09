@@ -206,6 +206,12 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-if __name__ == "__main__":
-    arguments = build_parser().parse_args()
+def main(argv: list[str] | None = None) -> int:
+    """Run the existing ``parse``/``qdr`` command line interface."""
+    arguments = build_parser().parse_args(argv)
     arguments.func(arguments)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

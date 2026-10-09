@@ -59,7 +59,7 @@ def main() -> int:
         raise AssertionError(f"Unexpected DPO fixture count: {len(dpo_samples)}")
     parse_output = SCRATCH / "quality"
     run(
-        str(ROOT / "compute_quality_metrics.py"),
+        str(ROOT / "question_quality_main.py"),
         "parse",
         "--group-dir",
         "demo=fixtures/question_inputs/demo",
@@ -72,7 +72,7 @@ def main() -> int:
 
     qdr_output = SCRATCH / "qdr"
     qdr_stdout = run(
-        str(ROOT / "compute_quality_metrics.py"),
+        str(ROOT / "question_quality_main.py"),
         "qdr",
         "--parsed-dir",
         str(parse_output / "parsed"),
@@ -86,8 +86,7 @@ def main() -> int:
         raise AssertionError(f"Unexpected fixture summary: {summary}")
 
     judge_result = run(
-        "-m",
-        "llm_judge.evaluate_result",
+        str(ROOT / "question_llm_judge_main.py"),
         "--data-dir",
         "fixtures/judge_outputs",
         "--baseline",
@@ -99,8 +98,23 @@ def main() -> int:
     if "candidate" not in judge_result or "BASELINE" not in judge_result:
         raise AssertionError("Judge dry-run did not discover the fixture models")
 
+    reasoning_output = SCRATCH / "reasoning"
     run(
-        str(ROOT / "paper_reproduction" / "scripts" / "render_figures.py"),
+        str(ROOT / "reasoning_quality_main.py"),
+        "--mock",
+        "--data-dir",
+        "fixtures/reasoning_outputs",
+        "--cases-dir",
+        "fixtures/reasoning_cases",
+        "--output-dir",
+        str(reasoning_output),
+    )
+    reasoning_summary = json.loads((reasoning_output / "summary.json").read_text(encoding="utf-8"))
+    if sorted(reasoning_summary.get("models", {})) != ["baseline", "candidate"]:
+        raise AssertionError("Reasoning fixture summary is incomplete")
+
+    run(
+        str(ROOT / "paper_reproduction_main.py"),
         "--only",
         "question-quality",
         "--output-dir",
@@ -117,6 +131,7 @@ def main() -> int:
         "question_items": 1,
         "judge_mode": "dry-run",
         "qdr_mode": "mock",
+        "reasoning_mode": "mock",
         "figures": [str(path.relative_to(ROOT)) for path in expected],
     }
     print(json.dumps(report, ensure_ascii=False, indent=2))

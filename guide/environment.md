@@ -31,7 +31,7 @@ python -m pip install -r requirements_eval.txt
 ```
 
 评估依赖包括远程 Judge 所需的 OpenAI-compatible SDK、统计所需的 NumPy/
-Pandas、绘图所需的 Matplotlib，以及测试所需的 pytest。模型权重、推理服务
+Pandas、YAML manifest、绘图所需的 Matplotlib，以及测试所需的 pytest。模型权重、推理服务
 和真实输入不由依赖安装脚本下载。
 
 复制 `.env.example` 为本地 `.env` 后填写远程 Judge 的地址、密钥和模型名。
