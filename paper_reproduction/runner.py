@@ -35,8 +35,12 @@ def load_manifest(path: Path) -> dict:
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
+        data = handle.read()
+    # CSV inputs are text contracts.  Git may check them out with LF or CRLF
+    # depending on the platform, so hash their canonical LF representation.
+    if path.suffix.lower() in {".csv", ".tsv"}:
+        data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    digest.update(data)
     return digest.hexdigest()
 
 

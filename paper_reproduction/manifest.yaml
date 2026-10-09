@@ -6,14 +6,14 @@ figures:
   - id: question-preference
     source: question_preference.csv
     renderer: preference
-    sha256: aca80290c16eb95feb24fe5735bc0c68ad7fdc893a3b85fe7525a66fc8b17128
+    sha256: 9545a0fb65f6380c1c5cd1ab99dabd6fecdcdb69313a81f1a02063be0b574397
     outputs: [question_preference.pdf, question_preference.png, question_preference.svg]
     required_columns: [model, preference_rate, ci_low, ci_high, valid_cases]
     numeric_checks: {min_rows: 8, max_rows: 8, rate_columns: [preference_rate, ci_low, ci_high]}
   - id: question-quality
     source: question_quality.csv
     renderer: question-quality
-    sha256: fe8410bf1e9d177abe87c2a9065c1283a7a7b0820c3df138b6f0219aca8b7293
+    sha256: 00423dc49530adbaef23e960127a10a78f63996db962785442de2bccc2625445
     outputs: [question_quality.pdf, question_quality.png, question_quality.svg]
     required_columns: [model, answer_key_accuracy, option_set_adequacy, stem_clarity]
     numeric_checks: {min_rows: 9, max_rows: 9, rate_columns: [answer_key_accuracy, option_set_adequacy, stem_clarity]}
